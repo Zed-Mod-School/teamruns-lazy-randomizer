@@ -55,9 +55,9 @@
   (set! (-> target inter_type) (interaction-type none))
   (set! (-> target inter_amount) 0.0)
   (set! (-> target inter_status) 0.0)
-  (set! (-> target inter_name) (new 'global 'string INTERACTION_STRING_LEN (the-as string #f)))
-  (set! (-> target inter_parent) (new 'global 'string INTERACTION_STRING_LEN (the-as string #f)))
-  (set! (-> target inter_level) (new 'global 'string INTERACTION_STRING_LEN (the-as string #f)))
+  (set! (-> target inter_name) "")
+  (set! (-> target inter_parent) "")
+  (set! (-> target inter_level) "")
   (set! (-> target inter_cleanup) 0)
   (none))
 
@@ -149,7 +149,7 @@
     (((tgt-color pink)) (color-target-rgb tgt 1.0 0.0 1.0))
     (((tgt-color light-blue)) (color-target-rgb tgt 0.0 1.0 1.0))
     ;; (((tgt-color holo))
-    ;;   (color-target-rgb tgt 
+    ;;   (color-target-rgb tgt
     ;;     (rand-vu-float-range 0.0 5.0)
     ;;     (rand-vu-float-range 0.0 5.0)
     ;;     (rand-vu-float-range 0.0 5.0))
@@ -509,13 +509,13 @@
              (let ((remote-target (the-as target (handle->process (-> *remote-targets* idx)))))
                (set! (-> remote-target saved-owner) idx) ;; used to identify remote index from target
                (handle-new-mp-state idx remote-target)))
-           ;; assume target spawned at this point 
+           ;; assume target spawned at this point
            ;; position/color remote targets
            (let ((p (-> *multiplayer-info* players idx))
                  (obj (the process-drawable (handle->process (-> *remote-targets* idx)))))
              (when obj
                (if (and *target*
-                        (!= (-> *target* state name) 'target-warp-out) ;; avoids potential portal softlocks 
+                        (!= (-> *target* state name) 'target-warp-out) ;; avoids potential portal softlocks
                         (or (is-interactive? idx) (-> *spectator-handler* is_spectator?)))
                  (handle-remote-interaction p idx))
                (if (has-new-mp-state? idx) (handle-new-mp-state idx (the-as target obj)))

@@ -314,6 +314,7 @@ yakow-default-event-handler
     (behavior ()
       (ja-channel-push! 1 (seconds 0.15))
       (loop
+        (if (task-closed? (game-task village1-yakow) (task-status need-resolution)) (go yakow-die))
         (cond
           ((rand-vu-percent? 0.2) (effect-control-method-10 (-> self skel effect) 'yakow-1 0.0 -1))
           ((rand-vu-percent? 0.2) (effect-control-method-10 (-> self skel effect) 'yakow-2 0.0 -1)))
