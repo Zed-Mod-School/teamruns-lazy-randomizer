@@ -2043,6 +2043,7 @@
  "common-obs/nav-enemy-h.gc"
  "common-obs/nav-enemy.gc"
  "common-obs/baseplat.gc"
+  "mods/checkpoint-randomizer.gc"
  "common-obs/basebutton.gc"
  "common-obs/tippy.gc"
  "anim/joint-exploder.gc"

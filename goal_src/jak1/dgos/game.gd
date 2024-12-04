@@ -276,6 +276,7 @@
   "water.o"
   "collectables-part.o"
   "collectables.o"
+   "checkpoint-randomizer.o"
   "task-control.o"
   "process-taskable.o"
   "pov-camera.o"
