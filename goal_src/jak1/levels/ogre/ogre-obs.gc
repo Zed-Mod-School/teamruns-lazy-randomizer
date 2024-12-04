@@ -681,7 +681,7 @@
       (dotimes (tgt-idx MAX_MULTIPLAYER_COUNT)
         (let ((target (get-interactive-target tgt-idx)))
           (if (and (and target (>= 286720.0 (vector-vector-distance (-> self root trans) (-> target control trans))))
-                  (send-event target 'query 'powerup (pickup-type eco-blue)))
+                   (send-event target 'query 'powerup (pickup-type eco-blue)))
             (go ogre-bridge-activate))))
       0)
   :code
@@ -1009,8 +1009,7 @@
     (set! (-> v1-2 waveform) ripple-for-ogre-lava))
   (dotimes (tgt-idx MAX_MULTIPLAYER_COUNT)
     (logclear! (-> this flags tgt-idx) (water-flags wt23))
-    (logior! (-> this flags tgt-idx) (water-flags wt25))
-    )
+    (logior! (-> this flags tgt-idx) (water-flags wt25)))
   (set! (-> this attack-event) 'lava)
   (none))
 

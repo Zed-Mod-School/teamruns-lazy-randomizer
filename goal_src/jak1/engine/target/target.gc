@@ -8,6 +8,7 @@
 ;; TODO - almost all of these are in target-handler or target2, temporary
 
 (define-extern get-target (function int target))
+
 (define-extern target-state-hook-exit (function none :behavior target))
 
 (define-extern target-effect-exit (function none :behavior target))
@@ -29,9 +30,13 @@
 (define-extern target-send-attack (function process uint touching-shapes-entry int int symbol :behavior target))
 
 (define-extern target-bonk-event-handler (function process int symbol event-message-block object :behavior target))
+
 (define-extern is-interactive? (function int symbol))
+
 (define-extern target-is-interactive? (function target symbol))
+
 (define-extern target-has-mp-state? (function target symbol symbol))
+
 (define-extern *multiplayer-info* multiplayer-info)
 
 ;; DECOMP BEGINS
@@ -103,8 +108,7 @@
     (logior! (-> self control status) (cshape-moving-flags onsurf))
     (if (and (!= self *target*) (target-has-mp-state? self 'target-tube)) ;; tube crash fix on remote usage during deload (this one might not be needed?)
       (go target-jump (-> *TARGET-bank* tube-jump-height-min) (-> *TARGET-bank* tube-jump-height-max) (the-as surface #f))
-      (go target-hit-ground 'stuck)
-      ))
+      (go target-hit-ground 'stuck)))
   (if (!= (-> self state-time) (current-time)) (slide-down-test))
   0
   (none))
@@ -560,7 +564,6 @@
               (f26-1 0.0))
           (loop
             (if (!= self *target*) (set! (-> self control unknown-float01) 40960.0)) ;; set player xz velocity to max run speed for animation
-
             (let ((f22-0 (fmax -1.0 (fmin 1.0 (* 2.0 (-> self control unknown-float61)))))
                   (f24-0 (fmax -1.0 (fmin 1.0 (* 1.6 (-> self control unknown-float62))))))
               (set! f30-0
@@ -835,7 +838,6 @@
         (else (ja-channel-push! 1 (seconds 0.1)) (ja :group! eichar-duck-walk-ja :num! min)))
       (loop
         (if (!= self *target*) (set! (-> self control unknown-float01) 40960.0)) ;; set player xz velocity to max run speed for animation
-      
         (if (= (-> self skel root-channel 0) (-> self skel channel)) (set! (-> self control unknown-surface00) *duck-mods*))
         (ja :num!
             (loop! (fmin 1.0
@@ -1220,8 +1222,7 @@
       (set-time! (-> self state-time))
       (when (or (= self *target*) (target-is-interactive? self))
         (target-start-attack)
-        (target-danger-set! 'spin #f)
-        )
+        (target-danger-set! 'spin #f))
       (set! (-> self control unknown-surface00) *attack-mods*)
       (set! (-> self water drip-mult) 4.0)
       (set! (-> self neck flex-blend) 0.0))
@@ -1293,8 +1294,7 @@
       (set! (-> *run-attack-mods* turnvv) 655360.0)
       (when (or (= self *target*) (target-is-interactive? self))
         (target-start-attack)
-        (target-danger-set! 'punch #f)
-        )
+        (target-danger-set! 'punch #f))
       (if (or (< (fabs (-> self control unknown-float62)) 0.3) (< 0.3 (fabs (-> self control unknown-float61))))
         (set! (-> self control unknown-float81) 1.0)))
   :exit
@@ -1415,8 +1415,7 @@
       (logclear! (-> self control status) (cshape-moving-flags onsurf onground tsurf))
       (when (or (= self *target*) (target-is-interactive? self))
         (target-start-attack)
-        (target-danger-set! 'spin-air #f)
-        )
+        (target-danger-set! 'spin-air #f))
       (set! (-> self control unknown-surface00) *jump-attack-mods*)
       (let ((f0-1 (vector-dot (-> self control dynam gravity-normal) (-> self control transv))))
         (cond
@@ -1521,8 +1520,7 @@
       (set-time! (-> self state-time))
       (when (or (= self *target*) (target-is-interactive? self))
         (target-start-attack)
-        (target-danger-set! 'uppercut #f)
-        )
+        (target-danger-set! 'uppercut #f))
       (set! (-> self control unknown-surface00) *turn-around-mods*))
   :exit target-exit
   :code
@@ -1900,8 +1898,7 @@
             (set! (-> self event-hook) target-dangerous-event-handler)
             (when (or (= self *target*) (target-is-interactive? self))
               (target-start-attack)
-              (target-danger-set! 'flip #f)
-              ))
+              (target-danger-set! 'flip #f)))
           (compute-alignment! (-> self align))
           (if (not (ja-max? 0))
             (align! (-> self align)

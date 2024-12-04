@@ -26,7 +26,6 @@
    dark-crystal-idle
    dark-crystal-spawn-fuel-cell))
 
-
 (defskelgroup *dark-crystal-sg*
   dark-crystal
   dark-crystal-lod0-jg
@@ -403,9 +402,9 @@
         (('touch 'attack)
          (if (= (-> proc type) target)
            (level-hint-spawn (text-id cave-dark-crystals-flee) "sksp0334" (the-as entity #f) *entity-pool* (game-task none)))
-        (when (or (not (type-type? (-> proc type) target)) (= proc *target*) (target-is-interactive? (the-as target proc)))
-          (close-specific-task! (game-task cave-dark-crystals) (task-status need-hint))
-          (go dark-crystal-activate)))))
+         (when (or (not (type-type? (-> proc type) target)) (= proc *target*) (target-is-interactive? (the-as target proc)))
+           (close-specific-task! (game-task cave-dark-crystals) (task-status need-hint))
+           (go dark-crystal-activate)))))
   :code
     (behavior ()
       (loop
@@ -432,7 +431,9 @@
 (defstate dark-crystal-explode (dark-crystal)
   :code
     (behavior ()
-      (runs-on-dark-crystal-explode (the-as string (-> self name)) (-> self crystal-num) (symbol->string (-> *level* level (-> self draw level-index) name)))
+      (runs-on-dark-crystal-explode (the-as string (-> self name))
+                                    (-> self crystal-num)
+                                    (symbol->string (-> *level* level (-> self draw level-index) name)))
       (set-time! (-> self state-time))
       (logclear! (-> self mask) (process-mask actor-pause))
       (clear-collide-with-as (-> self root))

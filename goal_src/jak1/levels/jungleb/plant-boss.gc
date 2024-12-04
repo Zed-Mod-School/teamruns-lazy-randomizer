@@ -5,6 +5,7 @@
 (declare-type plant-boss-leaf process-drawable)
 
 (define-extern get-closest-interactive-target (function process-drawable target))
+
 (define-extern runs-on-new-boss-phase (function string float string float none))
 
 ;; DECOMP BEGINS
@@ -43,7 +44,6 @@
    plant-boss-spawn
    plant-boss-vulnerable))
 
-
 (defmethod relocate ((this plant-boss) (offset int))
   (if (nonzero? (-> this neck)) (&+! (-> this neck) offset))
   (if (nonzero? (-> this body)) (&+! (-> this body) offset))
@@ -68,7 +68,6 @@
    (plant-boss-vine-hit basic)
    plant-boss-vine-idle))
 
-
 (deftype plant-boss-leaf (process-drawable)
   ((root             collide-shape-moving :override)
    (side             int32)
@@ -81,7 +80,6 @@
    (plant-boss-leaf-idle symbol)
    (plant-boss-leaf-open symbol)
    (plant-boss-leaf-open-idle symbol)))
-
 
 (defskelgroup *plant-boss-sg*
   plant-boss
@@ -693,7 +691,7 @@
           (dotimes (tgt-idx MAX_MULTIPLAYER_COUNT)
             (let ((target (get-interactive-target tgt-idx)))
               (if (and (and target (>= 245760.0 (vector-vector-distance (-> self root trans) (-> target control trans))))
-                      (< (fabs (- (-> (target-pos 0) y) (-> self root trans y))) 40960.0))
+                       (< (fabs (- (-> (target-pos 0) y) (-> self root trans y))) 40960.0))
                 (go plant-boss-intro))))
           (suspend)
           (ja :num! (seek!)))))
@@ -781,14 +779,14 @@
           (let ((f30-0 (vector-vector-distance (remote-target-pos 0 target) (-> self root trans))))
             (if (and (= target *target*) (< 409600.0 f30-0)) (go plant-boss-far-idle))
             (if (and (< f30-0 143360.0)
-                    (time-elapsed? (-> self state-time)
+                     (time-elapsed? (-> self state-time)
                                     (cond
                                       ((>= (-> self try) 15) 1500)
                                       ((>= (-> self try) 10) 1200)
                                       ((>= (-> self try) 5) 900)
                                       (else 600)))
-                    target
-                    (not (logtest? (-> target state-flags)
+                     target
+                     (not (logtest? (-> target state-flags)
                                     (state-flags being-attacked invulnerable timed-invulnerable invuln-powerup do-not-notice dying))))
               (go plant-boss-attack 1))))))
   :code
@@ -889,8 +887,11 @@
                 (the-as collide-shape-moving (-> self root))
                 (the-as uint 1))
            (send-event proc 'shove (-> block param 0) (static-attack-info ((shove-up (meters 2)) (shove-back (meters 6)))))
-           (runs-on-new-boss-phase (the-as string (-> self name)) (- (-> self health) 1.0) (symbol->string (-> *level* level (-> self draw level-index) name)) 0.0)
-         (go plant-boss-hit (the-as symbol (-> block param 1)))))
+           (runs-on-new-boss-phase (the-as string (-> self name))
+                                   (- (-> self health) 1.0)
+                                   (symbol->string (-> *level* level (-> self draw level-index) name))
+                                   0.0)
+           (go plant-boss-hit (the-as symbol (-> block param 1)))))
         (else (plant-boss-generic-event-handler proc argc message block))))
   :enter
     (behavior ()

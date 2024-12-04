@@ -21,7 +21,6 @@
   (:states
    windmill-one-idle))
 
-
 (defskelgroup *windmill-one-sg*
   windmill-one
   windmill-one-lod0-jg
@@ -167,7 +166,6 @@
    grottopole-idle
    grottopole-moving-down
    grottopole-moving-up))
-
 
 (defskelgroup *grottopole-sg*
   grottopole
@@ -320,7 +318,6 @@
   ((root collide-shape :override))
   (:states (ecoventrock-break symbol)
    ecoventrock-idle))
-
 
 (defskelgroup *ecoventrock-sg*
   ecoventrock
@@ -533,8 +530,8 @@
                         (arg0 (the-as int #f))
                         (else
                          (when *enable-ingame-cutscenes?*
-                          (ambient-hint-spawn "gamcam10" (the-as vector #f) *entity-pool* 'camera)
-                          (ppointer->handle (process-spawn pov-camera (-> self root trans) *beachcam-sg* (-> self name) 0 #f '() :to self)))))))
+                           (ambient-hint-spawn "gamcam10" (the-as vector #f) *entity-pool* 'camera)
+                           (ppointer->handle (process-spawn pov-camera (-> self root trans) *beachcam-sg* (-> self name) 0 #f '() :to self)))))))
             (process-drawable-birth-fuel-cell (the-as entity #f) (the-as vector #f) #f)
             (while (handle->process (the-as handle gp-1))
               (suspend)))
@@ -574,7 +571,6 @@
    flying-rock-idle
    flying-rock-rolling))
 
-
 (defskelgroup *kickrock-sg*
   kickrock
   kickrock-lod0-jg
@@ -603,7 +599,11 @@
           (set! (-> self root transv w) 1.0)
           (if (not gp-0) (vector-v++! (-> self root transv) (compute-acc-due-to-gravity (-> self root) (new-stack-vector0) 1.0)))
           (update-transforms! (-> self root))
-          (fill-cache-integrate-and-collide! (-> self root) (-> self root transv) (collide-kind background) *collide-cache* *collide-work*)
+          (fill-cache-integrate-and-collide! (-> self root)
+                                             (-> self root transv)
+                                             (collide-kind background)
+                                             *collide-cache*
+                                             *collide-work*)
           (quaternion*! (-> self root quat) (-> self root quat) (-> self tumble))
           (suspend)))
       (while (< 2048.0 (vector-length (-> self root transv)))
@@ -615,7 +615,11 @@
            (vector-v++! (-> self root transv) (compute-acc-due-to-gravity (-> self root) (new-stack-vector0) 1.0))))
         (set! (-> self root transv w) 1.0)
         (update-transforms! (-> self root))
-        (fill-cache-integrate-and-collide! (-> self root) (-> self root transv) (collide-kind background) *collide-cache* *collide-work*)
+        (fill-cache-integrate-and-collide! (-> self root)
+                                           (-> self root transv)
+                                           (collide-kind background)
+                                           *collide-cache*
+                                           *collide-work*)
         (let ((gp-2 (new 'stack-no-clear 'vector))
               (f30-1 (vector-length (-> self root transv))))
           (set-vector! gp-2 (-> self root transv z) 0.0 (- (-> self root transv x)) 1.0)
@@ -680,7 +684,6 @@
   (:states
    bladeassm-idle))
 
-
 (defskelgroup *bladeassm-sg*
   bladeassm
   bladeassm-lod0-jg
@@ -744,7 +747,6 @@
    flutflutegg-idle
    flutflutegg-physics
    flutflutegg-physics-fall))
-
 
 (defskelgroup *flutflutegg-sg*
   flutflutegg
@@ -876,22 +878,22 @@
       (local-vars (v1-25 symbol))
       (when *enable-ingame-cutscenes?*
         (process-spawn camera-tracker
-                      :init
-                      camera-tracker-init
-                      (lambda :behavior camera-tracker ()
-                        (while (not (process-grab? *target*))
-                          (suspend))
-                        (camera-change-to "camera-135" 0 #f)
-                        (camera-look-at (the-as pair (ppointer->process (-> self parent))) (the-as uint 9))
-                        (suspend-for (seconds 4))
-                        (while (not (process-release? (handle->process (-> self grab-target))))
-                          (suspend))
-                        (camera-look-at (the-as pair *target*) (the-as uint 0))
-                        (send-event *camera* 'blend-from-as-fixed)
-                        (camera-change-to (the-as string 'base) 75 #f)
-                        (none))
-                      :to
-                      self))
+                       :init
+                       camera-tracker-init
+                       (lambda :behavior camera-tracker ()
+                         (while (not (process-grab? *target*))
+                           (suspend))
+                         (camera-change-to "camera-135" 0 #f)
+                         (camera-look-at (the-as pair (ppointer->process (-> self parent))) (the-as uint 9))
+                         (suspend-for (seconds 4))
+                         (while (not (process-release? (handle->process (-> self grab-target))))
+                           (suspend))
+                         (camera-look-at (the-as pair *target*) (the-as uint 0))
+                         (send-event *camera* 'blend-from-as-fixed)
+                         (camera-change-to (the-as string 'base) 75 #f)
+                         (none))
+                       :to
+                       self))
       (close-specific-task! (game-task beach-flutflut) (task-status need-reminder))
       (loop
         (vector-float*! (-> self root transv) (-> self dir) (-> self vel))
@@ -1002,7 +1004,6 @@
    harvester-idle
    (harvester-inflate symbol)))
 
-
 (defskelgroup *harvester-sg*
   harvester
   harvester-lod0-jg
@@ -1102,7 +1103,6 @@
   (none))
 
 (deftype beachcam (process-hidden) ())
-
 
 (defun beachcam-spawn ()
   (with-pp

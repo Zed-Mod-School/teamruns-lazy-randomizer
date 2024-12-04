@@ -81,7 +81,8 @@
   (write-to-file obj *pc-temp-string-1*)
   (none))
 
-(defmethod commit-to-file teamruns-pc-settings ((obj teamruns-pc-settings))
+(defmethod commit-to-file teamruns-pc-settings
+  ((obj teamruns-pc-settings))
   "commits the current teamruns settings to the file"
   (format (clear *pc-temp-string-1*) "~S/Mods/teamruns-pc-settings.gc" *pc-settings-folder*)
   (pc-mkdir-file-path *pc-temp-string-1*)
@@ -92,19 +93,15 @@
 ;;;; randomizer-settings
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defmethod write-to-file randomizer-settings ((obj randomizer-settings) (filename string))
+(defmethod write-to-file randomizer-settings
+  ((obj randomizer-settings) (filename string))
   "write settings to a file"
-
-  (if (not filename)
-    (return #f))
-
-    (let ((file (new 'stack 'file-stream filename 'write)))
-    (if (not (file-stream-valid? file))
-      (return #f))
-
+  (if (not filename) (return #f))
+  (let ((file (new 'stack 'file-stream filename 'write)))
+    (if (not (file-stream-valid? file)) (return #f))
     (format file "(settings #x~X~%" (-> obj version))
     ;; left as "cells-needed-to-warp" in settings for backwards compatibility
-    (format file "  (cells-needed-to-warp ~F)~%" (the-as float(-> obj collectables-needed-to-warp)))
+    (format file "  (cells-needed-to-warp ~F)~%" (the-as float (-> obj collectables-needed-to-warp)))
     (format file "  (show-warp-counter? ~A)~%" (-> obj show-warp-counter?))
     (format file "  (Randomizer? ~A)~%" (-> obj checkpoint-randomizer?))
     (format file "  (use-random-seed? ~A)~%" (-> obj use-random-seed?))
@@ -121,17 +118,13 @@
     (format file "  (WarpOnDeath? ~A)~%" (-> obj warp-on-death?))
     (format file "  (rng-lib ~A)~%" (-> obj rng-lib))
     (format file "  (checkpoint-logic ~A)~%" (-> obj checkpoint-logic))
-
     (format file "  )~%")
-    (file-stream-close file)
-    )
-
+    (file-stream-close file))
   (format 0 "randomizer settings file write: ~A~%" filename)
+  #t)
 
-  #t
-  )
-
-(defmethod commit-to-file randomizer-settings ((obj randomizer-settings))
+(defmethod commit-to-file randomizer-settings
+  ((obj randomizer-settings))
   "commits the current settings to the file"
   ;; auto load settings if available
   (format (clear *pc-temp-string-1*) "~S/Mods/randomizer-settings.gc" *pc-settings-folder*)
@@ -139,17 +132,13 @@
   (write-to-file obj *pc-temp-string-1*)
   (none))
 
-
-(defmethod read-from-file randomizer-settings ((obj randomizer-settings) (filename string))
+(defmethod read-from-file randomizer-settings
+  ((obj randomizer-settings) (filename string))
   "read settings from a file"
-
-  (if (not filename)
-    (return #f))
-
+  (if (not filename) (return #f))
   ;; (let ((file (new 'stack 'file-stream filename 'read)))
   ;;   (when (not (file-stream-valid? file))
   ;;     (return #f))
-
   ;;   ;;Check version
   ;;   (let ((version RANDO_SETTINGS_VERSION))
   ;;     (with-settings-scope (file)
@@ -188,26 +177,21 @@
   ;;               (("WarpOnDeath?") (set! (-> obj warp-on-death?) (file-stream-read-symbol file)))
   ;;               (("rng-lib") (set! (-> obj rng-lib) (file-stream-read-symbol file)))
   ;;               (("checkpoint-logic") (set! (-> obj checkpoint-logic) (file-stream-read-symbol file)))
-
   ;;               )
   ;;             )
   ;;           )
   ;;         )
   ;;       )
-
   ;;     )
   ;;     (inspect file)
   ;;   (file-stream-close file)
   ;;   )
-
   ;; (format 0 "pc settings file read: ~A~%" filename)
+  #t)
 
-  #t
-  )
-
-(defmethod load-settings randomizer-settings ((obj randomizer-settings))
+(defmethod load-settings randomizer-settings
+  ((obj randomizer-settings))
   "load"
-
   (format (clear *pc-temp-string-1*) "~S/Mods/randomizer-settings.gc" *pc-settings-folder*)
   (if (pc-filepath-exists? *pc-temp-string-1*)
     ;; (begin
@@ -218,19 +202,17 @@
     (format 0 "[Randomizer] Randomizer Settings not found at '~S'...initializing with defaults!~%" *pc-temp-string-1*))
   0)
 
-
 ;; (defmethod new pc-settings ((allocation symbol) (type-to-make type))
 ;;   "make a new pc-settings"
 ;;   (let ((obj (object-new allocation type-to-make (the-as int (-> type-to-make size))))) (initialize obj) obj))
 
-
 (defmethod new randomizer-settings ((allocation symbol) (type-to-make type))
   "make a new randomizer-settings"
   (let ((obj (object-new allocation type-to-make (the-as int (-> type-to-make size)))))
-     (reset obj)
+    (reset obj)
     ;; ;; auto load settings if available
     ;; ;; if saved settings are corrupted or not found, use defaults
-     (load-settings obj)
+    (load-settings obj)
     obj))
 
 (defmethod update-from-os ((obj pc-settings))
@@ -495,11 +477,11 @@
     buf))
 
 (define-extern string->uint (function string uint))
+
 (defun file-stream-read-uint ((file file-stream))
   (file-stream-seek-past-whitespace file)
   (file-stream-read-word file)
-  (string->uint *pc-temp-string*)
-  )
+  (string->uint *pc-temp-string*))
 
 (defun file-stream-read-int ((file file-stream))
   (file-stream-seek-past-whitespace file)
@@ -798,82 +780,64 @@
   (format 0 "pc settings file write: ~A~%" filename)
   #t)
 
-  (defmethod write-to-file teamruns-pc-settings ((obj teamruns-pc-settings) (filename string))
+(defmethod write-to-file teamruns-pc-settings
+  ((obj teamruns-pc-settings) (filename string))
   "write settings to a file"
-
-  (if (not filename)
-    (return #f))
-
-    (let ((file (new 'stack 'file-stream filename 'write)))
-    (if (not (file-stream-valid? file))
-      (return #f))
-
+  (if (not filename) (return #f))
+  (let ((file (new 'stack 'file-stream filename 'write)))
+    (if (not (file-stream-valid? file)) (return #f))
     (format file "(settings #x~X~%" (-> obj version))
     (format file "  (ui-teams ~D)~%" (-> obj ui-teams))
     (format file "  (ui-timer ~D)~%" (-> obj ui-timer))
     (format file "  (ui-splits ~D)~%" (-> obj ui-splits))
     (format file "  (ui-names ~D)~%" (-> obj ui-names))
     (format file "  )~%")
-    (file-stream-close file)
-    )
-
+    (file-stream-close file))
   (format 0 "teamruns settings file write: ~A~%" filename)
-  #t
-  )
+  #t)
 
-(defmethod read-from-file teamruns-pc-settings ((obj teamruns-pc-settings) (filename string))
+(defmethod read-from-file teamruns-pc-settings
+  ((obj teamruns-pc-settings) (filename string))
   "read settings from a file"
-
-  (if (not filename)
-    (return #f))
-
+  (if (not filename) (return #f))
   (let ((file (new 'stack 'file-stream filename 'read)))
     (when (not (file-stream-valid? file))
       (return #f))
-
     ;;Check version
     (let ((version TEAMRUNS_SETTINGS_VERSION))
       (with-settings-scope (file)
-        (case-str (file-stream-read-word file)
-          (("settings")
-            (set! version (file-stream-read-int file))
-            (cond
-              ((= (logand version #xffffffff00000000) (logand TEAMRUNS_SETTINGS_VERSION #xffffffff00000000))
-                ;; minor difference
-                )
-              (else
-                ;; major difference
-                (format 0 "Randomizer settings version mismatch! Got ~D.~D vs ~D.~D~%" TEAMRUNS_SETTINGS_VERSION_MAJOR TEAMRUNS_SETTINGS_VERSION_MINOR (bit-field int version 32 16) (bit-field int version 48 16))
-                (file-stream-close file)
-                (return #f)
-                )
-              )
-            ;;read through the file and set fields
-            (dosettings (file)
-              (case-str *pc-temp-string*
-                (("ui-teams") (set! (-> obj ui-teams) (file-stream-read-int file)))
-                (("ui-timer") (set! (-> obj ui-timer) (file-stream-read-int file)))
-                (("ui-splits") (set! (-> obj ui-splits) (file-stream-read-int file)))
-                (("ui-names") (set! (-> obj ui-names) (file-stream-read-int file)))
-                )
-              )
-            )
-          )
-        )
-
-      )
-      (inspect file)
-    (file-stream-close file)
-    )
-
+                           (case-str (file-stream-read-word file)
+                             (("settings")
+                              (set! version (file-stream-read-int file))
+                              (cond
+                                ((= (logand version #xffffffff00000000) (logand TEAMRUNS_SETTINGS_VERSION #xffffffff00000000))
+                                 ;; minor difference
+                                 )
+                                (else
+                                 ;; major difference
+                                 (format 0
+                                         "Randomizer settings version mismatch! Got ~D.~D vs ~D.~D~%"
+                                         TEAMRUNS_SETTINGS_VERSION_MAJOR
+                                         TEAMRUNS_SETTINGS_VERSION_MINOR
+                                         (bit-field int version 32 16)
+                                         (bit-field int version 48 16))
+                                 (file-stream-close file)
+                                 (return #f)))
+                              ;;read through the file and set fields
+                              (dosettings (file)
+                                          (case-str *pc-temp-string*
+                                            (("ui-teams") (set! (-> obj ui-teams) (file-stream-read-int file)))
+                                            (("ui-timer") (set! (-> obj ui-timer) (file-stream-read-int file)))
+                                            (("ui-splits") (set! (-> obj ui-splits) (file-stream-read-int file)))
+                                            (("ui-names") (set! (-> obj ui-names) (file-stream-read-int file)))))))))
+    (inspect file)
+    (file-stream-close file))
   (format 0 "pc settings file read: ~A~%" filename)
+  #t)
 
-  #t
-  )
-
-(defmethod load-settings teamruns-pc-settings ((obj teamruns-pc-settings))
+(defmethod load-settings teamruns-pc-settings
+  ((obj teamruns-pc-settings))
   "load"
-
   (format (clear *pc-temp-string-1*) "~S/Mods/teamruns-pc-settings.gc" *pc-settings-folder*)
   (if (pc-filepath-exists? *pc-temp-string-1*)
     (begin
@@ -882,8 +846,7 @@
         (format 0 "Teamruns settings found at '~S' but could not be loaded, using defaults!~%" *pc-temp-string-1*)
         (reset obj)))
     (format 0 "Teamruns settings not found at '~S'...initializing with defaults!~%" *pc-temp-string-1*))
-  0
-  )
+  0)
 
 (defmethod new teamruns-pc-settings ((allocation symbol) (type-to-make type))
   "make a new teamruns-pc-settings"
@@ -892,8 +855,7 @@
     ;; auto load settings if available
     ;; if saved settings are corrupted or not found, use defaults
     (load-settings obj)
-    obj)
-  )
+    obj))
 
 (defmethod load-settings ((obj pc-settings))
   "load"

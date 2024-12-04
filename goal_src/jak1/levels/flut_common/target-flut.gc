@@ -7,10 +7,12 @@
 (require "engine/common-obs/water.gc")
 (require "levels/flut_common/flutflut.gc")
 (require "engine/common-obs/nav-enemy-h.gc")
-
 (define-extern is-interactive? (function int symbol))
+
 (define-extern remote-target-in-close-by-environment? (function target symbol))
+
 (define-extern *multiplayer-info* multiplayer-info)
+
 (define-extern *enable-remote-target-yellow-eco-blasts* symbol)
 
 ;; DECOMP BEGINS
@@ -23,7 +25,6 @@
    (stick-lock    basic)
    (flap-sound-id sound-id)))
 
-
 (deftype flut-bank (basic)
   ((jump-height-min        meters)
    (jump-height-max        meters)
@@ -31,7 +32,6 @@
    (double-jump-height-max meters)
    (air-attack-speed       meters)
    (ground-timeout         time-frame)))
-
 
 (define *FLUT-bank*
   (new 'static
@@ -241,15 +241,13 @@
      #f)))
 
 (defbehavior target-flut-standard-event-handler target ((arg0 process) (arg1 int) (arg2 symbol) (arg3 event-message-block))
-  (when (and (not *remote-stuck-released*) 
-        (= (-> arg0 type) target) (!= arg0 *target*) 
-        (process-close? (the-as process-drawable arg0) 6000.0)
-        )
+  (when (and (not *remote-stuck-released*)
+             (= (-> arg0 type) target)
+             (!= arg0 *target*)
+             (process-close? (the-as process-drawable arg0) 6000.0))
     (set! *remote-stuck-released* #t)
     (set! *remote-stuck-release-timestamp* (+ (current-time) (seconds 0.5)))
-    (logclear! (-> *target* control root-prim collide-with) (collide-kind target-remote))
-    )
-
+    (logclear! (-> *target* control root-prim collide-with) (collide-kind target-remote)))
   (cond
     ((and (= arg2 'query) (= (-> arg3 param 0) 'mode)) 'flut)
     (else
@@ -698,7 +696,8 @@
   :enter
     (behavior ()
       (target-land-effect)
-      (if (and (= self *target*) (< 40960.0 (-> self control ground-impact-vel))) (cpad-set-buzz! (-> *cpad-list* cpads 0) 1 178 (seconds 0.2)))
+      (if (and (= self *target*) (< 40960.0 (-> self control ground-impact-vel)))
+        (cpad-set-buzz! (-> *cpad-list* cpads 0) 1 178 (seconds 0.2)))
       (set! (-> self control unknown-dword31) 0)
       (set! (-> self control unknown-dword33) 0)
       (set! (-> self control unknown-surface00) *flut-walk-mods*))
@@ -801,11 +800,10 @@
       (set! (-> *run-attack-mods* turnvv) 655360.0)
       (when (or (= self *target*) (target-is-interactive? self))
         (target-start-attack)
-        (target-danger-set! 'flut-attack #f)
-        )
+        (target-danger-set! 'flut-attack #f))
       (when (or (and (and (= (-> self fact eco-type) (pickup-type eco-yellow)) (>= (-> self fact eco-level) 1.0))
-                 (time-elapsed? (-> self control unknown-dword82) (seconds 0.25))
-                 (or (= self *target*) (and *enable-remote-target-yellow-eco-blasts* (target-is-interactive? self)))))
+                     (time-elapsed? (-> self control unknown-dword82) (seconds 0.25))
+                     (or (= self *target*) (and *enable-remote-target-yellow-eco-blasts* (target-is-interactive? self)))))
         (let ((gp-0 (vector-z-quaternion! (new 'stack-no-clear 'vector) (-> self control quat)))
               (s5-0 (vector<-cspace! (new 'stack-no-clear 'vector) (-> self manipy 0 node-list data 32))))
           (set! (-> gp-0 y) 0.0)
@@ -941,9 +939,8 @@
       (set! (-> self control unknown-surface00) *flut-air-attack-mods*)
       (when (or (= self *target*) (target-is-interactive? self))
         (target-start-attack)
-        (target-danger-set! 'flut-attack #f)
-        )
-    (let ((gp-0 (new-stack-vector0)))
+        (target-danger-set! 'flut-attack #f))
+      (let ((gp-0 (new-stack-vector0)))
         (let ((f0-1 (vector-dot (-> self control dynam gravity-normal) (-> self control transv))))
           0.0
           (vector-! gp-0 (-> self control transv) (vector-float*! gp-0 (-> self control dynam gravity-normal) f0-1)))
@@ -1139,7 +1136,8 @@
                  (ja-channel-push! 1 (seconds 0.075))
                  (ja :group! eichar-flut-hit-back-ja :num! min))))
             (target-hit-move gp-0 (target-hit-orient gp-0 s5-0) target-flut-falling-anim-trans f30-0)))
-        (if (and (= (-> self game mode) 'play) (>= 0.0 (-> self fact health))) (if (= self *target*) (go target-flut-death (-> gp-0 mode)))))
+        (if (and (= (-> self game mode) 'play) (>= 0.0 (-> self fact health)))
+          (if (= self *target*) (go target-flut-death (-> gp-0 mode)))))
       (go target-flut-hit-ground))
   :post target-flut-post)
 

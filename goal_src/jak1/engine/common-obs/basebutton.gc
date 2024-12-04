@@ -3,7 +3,6 @@
 (bundles "GAME.CGO")
 (require "engine/common-obs/generic-obs.gc")
 (require "engine/target/logic-target.gc")
-
 (define-extern target-is-interactive? (function target symbol))
 
 ;; DECOMP BEGINS
@@ -63,11 +62,11 @@
       (case message
         (('attack)
          (when (or (!= (-> proc type) target) (= (the-as target proc) *target*) (target-is-interactive? (the-as target proc)))
-         (case (-> block param 1)
-           (('flop)
-            (basebutton-method-29 self (-> self event-going-down) (-> self notify-actor))
-            (sound-play "silo-button")
-            (go-virtual basebutton-going-down)))))
+           (case (-> block param 1)
+             (('flop)
+              (basebutton-method-29 self (-> self event-going-down) (-> self notify-actor))
+              (sound-play "silo-button")
+              (go-virtual basebutton-going-down)))))
         (('trigger) (sound-play "silo-button") (go-virtual basebutton-going-down))
         (('move-to) (move-to-vec-or-quat! self (the-as vector (-> block param 0)) (the-as quaternion (-> block param 1))))))
   :enter

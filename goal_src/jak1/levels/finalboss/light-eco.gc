@@ -5,7 +5,6 @@
 (require "engine/physics/trajectory.gc")
 (require "engine/gfx/sprite/sparticle/sparticle.gc")
 (require "engine/common-obs/process-drawable.gc")
-
 (define-extern get-closest-interactive-target (function process-drawable target))
 
 ;; DECOMP BEGINS
@@ -513,7 +512,9 @@
                          v0-0))))
             (('trigger)
              (the-as int
-                     (when (and (not (-> self player-got-eco?)) *target* (= (get-closest-interactive-target (the-as process-drawable arg0)) *target*))
+                     (when (and (not (-> self player-got-eco?))
+                                *target*
+                                (= (get-closest-interactive-target (the-as process-drawable arg0)) *target*))
                        (set! (-> self player-got-eco?) #t)
                        (the-as int (send-event (ppointer->process (-> self parent)) 'white-eco-picked-up)))))
             (('beam-off) (the-as int (go light-eco-mother-discipate))))))

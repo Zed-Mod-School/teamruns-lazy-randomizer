@@ -512,21 +512,17 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define-once *pc-settings* (new 'global 'pc-settings-jak1))
+
 (define-once *teamruns-pc-settings* (new 'global 'teamruns-pc-settings))
 
 ;; This is the settings object, all new settings types must be initalized here.
 (define-once *randomizer-settings* (new 'global 'randomizer-settings))
 
-
-
-
 ;; This function updates all settings files, if a new settings type is added it needs to be added to this function.
 (defun commit-all-files ()
   (commit-to-file *pc-settings*)
   (commit-to-file *randomizer-settings*)
-
-  (commit-to-file *teamruns-pc-settings*)
-)
+  (commit-to-file *teamruns-pc-settings*))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;; other

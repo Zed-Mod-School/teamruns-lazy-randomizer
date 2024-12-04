@@ -1009,8 +1009,7 @@
     (set! (-> v1-2 waveform) ripple-for-lavatube-lava))
   (dotimes (tgt-idx MAX_MULTIPLAYER_COUNT)
     (logclear! (-> this flags tgt-idx) (water-flags wt23))
-    (logior! (-> this flags tgt-idx) (water-flags wt25))
-    )
+    (logior! (-> this flags tgt-idx) (water-flags wt25)))
   (set! (-> this attack-event) 'heat)
   (none))
 

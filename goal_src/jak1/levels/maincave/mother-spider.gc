@@ -773,7 +773,7 @@
                                  0
                                  (process->handle *target*)
                                  #f
-                  :to
+                                 :to
                                  self)
                   (set! gp-0 #t)
                   (set-time! (-> self last-spit-time))

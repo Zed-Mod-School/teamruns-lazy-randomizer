@@ -309,7 +309,8 @@
                                                (collide-kind background)
                                                (the process-drawable #f)
                                                result
-                                               (the uint 0) *collide-work*)))
+                                               (the uint 0)
+                                               *collide-work*)))
           (-! (-> bbox min y) (* u (meters 20.0)))
           ;; (format *stdcon* "u = ~f : ~`vector`P ~%" u (-> result vertex 0))
           (add-debug-sphere #t (bucket-id debug-draw0) (-> bbox min) (meters 2.0) (new 'static 'rgba :r #x80 :a #x80)))

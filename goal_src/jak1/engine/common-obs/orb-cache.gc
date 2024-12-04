@@ -3,8 +3,8 @@
 (bundles "GAME.CGO")
 (require "engine/common-obs/collectables.gc")
 (require "engine/common-obs/baseplat.gc")
-
 (define-extern any-interactive-targets-close? (function process-drawable float basic))
+
 (define-extern get-closest-interactive-target-with-blue-eco (function process-drawable target))
 
 ;; DECOMP BEGINS
@@ -49,12 +49,11 @@
       (dotimes (tgt-idx MAX_MULTIPLAYER_COUNT)
         (let ((target (get-interactive-target tgt-idx)))
           (if (and (and target (>= 20480.0 (vector-vector-distance (-> self root trans) (-> target control trans))))
-                  (not (send-event target 'query 'powerup (pickup-type eco-blue))))
+                   (not (send-event target 'query 'powerup (pickup-type eco-blue))))
             (level-hint-spawn (text-id sidekick-hint-orb-cache-top) "sksp0009" (the-as entity #f) *entity-pool* (game-task none)))
           (if (and (and target (!= target *target*) (>= 90000.0 (vector-vector-distance (-> self root trans) (-> target control trans))))
-                  (send-event target 'query 'powerup (pickup-type eco-blue)))
-                (go orb-cache-top-activate #f)
-              ))))
+                   (send-event target 'query 'powerup (pickup-type eco-blue)))
+            (go orb-cache-top-activate #f)))))
   :code
     (behavior ((arg0 symbol))
       (if (and (not arg0) (-> self child)) (sound-play "close-orb-cash"))
@@ -111,8 +110,8 @@
         (dotimes (tgt-idx MAX_MULTIPLAYER_COUNT)
           (let ((target (get-interactive-target tgt-idx)))
             (when (and (< f30-0 15155.2)
-                      (and target (>= 16384.0 (vector-vector-distance (-> this root trans) (-> target control trans))))
-                      (< (-> (remote-target-pos 0 target) y) (-> this basetrans y)))
+                       (and target (>= 16384.0 (vector-vector-distance (-> this root trans) (-> target control trans))))
+                       (< (-> (remote-target-pos 0 target) y) (-> this basetrans y)))
               (set! f30-0 (if (< 14131.2 f28-0) 15155.2 f28-0))
               (set! s3-0 #f))))
         (seek! (-> this basetrans y) (+ (-> this root-pos) f30-0) (* 40960.0 (seconds-per-frame)))

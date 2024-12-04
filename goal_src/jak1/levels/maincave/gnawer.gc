@@ -606,9 +606,10 @@
       (stop! (-> self sound2)))
   :trans
     (behavior ()
-    (dotimes (tgt-idx MAX_MULTIPLAYER_COUNT)
-      (let ((target (get-interactive-target tgt-idx)))
-        (if (and target (>= 81920.0 (vector-vector-distance (remote-target-pos 0 target) (-> self root trans)))) (go gnawer-retreat-into-post)))))
+      (dotimes (tgt-idx MAX_MULTIPLAYER_COUNT)
+        (let ((target (get-interactive-target tgt-idx)))
+          (if (and target (>= 81920.0 (vector-vector-distance (remote-target-pos 0 target) (-> self root trans))))
+            (go gnawer-retreat-into-post)))))
   :code
     (behavior ()
       (ja-channel-push! 1 (seconds 0.075))
@@ -879,15 +880,12 @@
                                                           '())
                                       (let ((a0-7 (new 'stack-no-clear 'vector)))
                                         (set-vector! a0-7 4485903.0 51184.027 -12815461.0 1.0)
-                                        (birth-pickup-at-point
-                                          a0-7
-                                          (pickup-type fuel-cell)
-                                          (the float (-> self entity extra perm task))
-                                          #f
-                                          self
-                                          (the-as fact-info #f)
-                                          )
-                                        ))
+                                        (birth-pickup-at-point a0-7
+                                                               (pickup-type fuel-cell)
+                                                               (the float (-> self entity extra perm task))
+                                                               #f
+                                                               self
+                                                               (the-as fact-info #f))))
                                     (-> s5-0 ppointer))
                                   0))
                       seq)

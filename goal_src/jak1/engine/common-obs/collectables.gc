@@ -21,14 +21,23 @@
 (define-extern runs-on-eco-pickup (function pickup-type process-tree none))
 
 (define-extern orb-placer-list-maintenace (function symbol none))
+
 (define-extern get-closest-interactive-target (function process-drawable target))
+
 (define-extern process-close? (function process-drawable float basic))
+
 (define-extern cancel-current-spool-anim (function none))
+
 (define-extern *allow-cell-pickup?* symbol)
+
 (define-extern *allow-orb-pickup?* symbol)
+
 (define-extern *allow-fly-pickup?* symbol)
+
 (define-extern *enable-remote-target-buzzer-pickup* symbol)
+
 (define-extern *enable-remote-target-money-pickup* symbol)
+
 (define-extern *enable-remote-target-eco-pickup* symbol)
 
 (declare-type vent process-drawable)
@@ -325,17 +334,15 @@
                  (and (logtest? (-> self flags) (collectable-flags can-collect))
                       (time-elapsed? (-> self birth-time) (-> self collect-timeout))
                       (!= (-> self next-state name) 'pickup)
-                      (and (or (= *target* proc)  ;; Local target pickup
-                              (and  ;; Remote target pickup
-                                (or *enable-remote-target-eco-pickup*  (and (!= (-> self fact pickup-type) (pickup-type eco-blue))
-                                  (!= (-> self fact pickup-type) (pickup-type eco-red))
-                                  (!= (-> self fact pickup-type) (pickup-type eco-yellow)))
-                                  )
-                                (or (and *allow-orb-pickup?* *enable-remote-target-money-pickup*) (!= (-> self fact pickup-type) (pickup-type money)))
-                                (or (and *allow-fly-pickup?* *enable-remote-target-buzzer-pickup*) (!= (-> self fact pickup-type) (pickup-type buzzer)))
-                              )
-                            )
-                        (send-event proc 'get-pickup (-> self fact pickup-type) (-> self fact pickup-amount)))))
+                      (and (or (= *target* proc) ;; Local target pickup
+                               (and ;; Remote target pickup
+                                 (or *enable-remote-target-eco-pickup*
+                                     (and (!= (-> self fact pickup-type) (pickup-type eco-blue))
+                                          (!= (-> self fact pickup-type) (pickup-type eco-red))
+                                          (!= (-> self fact pickup-type) (pickup-type eco-yellow))))
+                                 (or (and *allow-orb-pickup?* *enable-remote-target-money-pickup*) (!= (-> self fact pickup-type) (pickup-type money)))
+                                 (or (and *allow-fly-pickup?* *enable-remote-target-buzzer-pickup*) (!= (-> self fact pickup-type) (pickup-type buzzer)))))
+                           (send-event proc 'get-pickup (-> self fact pickup-type) (-> self fact pickup-amount)))))
         (logclear! (-> self mask) (process-mask actor-pause))
         (go-virtual pickup #f (process->handle proc)))
       (cond
@@ -523,20 +530,20 @@
         (((pickup-type eco-green) (pickup-type eco-pill)) (sound-play "pill-pickup")))
       (runs-on-eco-pickup (-> self fact pickup-type) (ppointer->process (-> self parent))) ;; trigger hook for mod base
       (if (nonzero? (-> self part)) (kill-and-free-particles (-> self part)))
-        (if (= *target* arg1) ;; eco pickup glow effect
-          (let ((gp-6 (handle->process (-> self pickup-handle))))
-            (if (nonzero? (-> self collect-effect))
-              (process-spawn part-tracker
-                            :init
-                            part-tracker-init
-                            (-> self collect-effect)
-                            -1
-                            part-tracker-track-target
-                            #f
-                            #f
-                            (-> self root root-prim prim-core)
-                            :to
-                            gp-6))))
+      (if (= *target* arg1) ;; eco pickup glow effect
+        (let ((gp-6 (handle->process (-> self pickup-handle))))
+          (if (nonzero? (-> self collect-effect))
+            (process-spawn part-tracker
+                           :init
+                           part-tracker-init
+                           (-> self collect-effect)
+                           -1
+                           part-tracker-track-target
+                           #f
+                           #f
+                           (-> self root root-prim prim-core)
+                           :to
+                           gp-6))))
       (if (nonzero? (-> self collect-effect2))
         (process-spawn part-tracker
                        :init
@@ -927,8 +934,7 @@
                            (not (logtest? (-> *target* state-flags) (state-flags grabbed dying))))))
         (when (= *target* proc)
           (add-setting! 'allow-progress #f 0.0 0)
-          (apply-settings *setting-control*)
-          )
+          (apply-settings *setting-control*))
         (logclear! (-> self mask) (process-mask actor-pause))
         (if (and *allow-cell-pickup?* (= *target* proc)) (go-virtual pickup #f (process->handle proc))))
       (cond
@@ -971,17 +977,11 @@
               (suspend)
               (ja :num! (loop! f30-1))))))))
 
-
 (defun enable-powercell-cutscenes? ()
   ;; depends on modifiations in snow-obs (crash)
-  (and
-    (not (and
-      (-> *randomizer-settings* checkpoint-randomizer?)
-      (-> *randomizer-settings* warp-on-cell?)
-      ))
-    ;;(-> *mods-settings* mod-powercellcutscenes?)
-    )
-  )
+  (and (not (and (-> *randomizer-settings* checkpoint-randomizer?) (-> *randomizer-settings* warp-on-cell?)))
+       ;;(-> *mods-settings* mod-powercellcutscenes?)
+       ))
 
 (defstate pickup (fuel-cell)
   :virtual #t
@@ -1010,79 +1010,296 @@
           (kill-and-free-particles (-> self part))
           (logior! (-> self draw status) (draw-status skip-bones))
           (if (and (process-close? self 3000.0)
-              (not (or (logtest? (res-lump-value (-> self entity) 'options fact-options :time (the-as float -1000000000.0))
-                                 (fact-options powerup))
-                       (and *target* (logtest? (-> *target* control root-prim prim-core action) (collide-action racer))))))
+                   (not (or (logtest? (res-lump-value (-> self entity) 'options fact-options :time (the-as float -1000000000.0))
+                                      (fact-options powerup))
+                            (and *target* (logtest? (-> *target* control root-prim prim-core action) (collide-action racer))))))
             (send-event *camera* 'teleport-to-other-start-string)))))
   :code
     (behavior ((arg0 object) (arg1 handle))
       (let* ((target (the-as target (handle->process arg1))))
+        (local-vars (sv-96 res-tag))
+        (when (or (= target *target*) (not target))
+          (cancel-current-spool-anim)
+          (sound-play "pu-powercell")
+          (runs-on-cell-pickup 'pickup))
+        (clear-collide-with-as (-> self root))
+        (logclear! (-> self mask) (process-mask actor-pause))
+        (logclear! (-> self draw status) (draw-status hidden))
+        (process-entity-status! self (entity-perm-status dead) #t)
+        (stop! (-> self sound))
+        (while (handle->process (-> *game-info* other-camera-handle))
+          (format #t
+                  "WARNING: fuel-cell stall ~D ~A ~A~%"
+                  (current-time)
+                  (handle->process (-> *game-info* other-camera-handle))
+                  (-> *level* loading-level))
+          (spool-push *art-control* (-> self victory-anim name) 0 self (the-as float -99.0))
+          (suspend))
+        (while (not (send-event (if target target *target*) 'clone-anim self))
+          (spool-push *art-control* (-> self victory-anim name) 0 self (the-as float -99.0))
+          (format #t "WARNING: fuel-cell stall on not cloning.~%")
+          (suspend))
+        (set! sv-96 (new 'static 'res-tag))
+        (let* ((v1-34 (res-lump-data (-> self entity) 'movie-pos (inline-array vector) :tag-ptr (& sv-96) :time (the-as float -1000000000.0)))
+               (gp-1 (if (and v1-34 (< (-> self movie-pos-index) (the-as int (-> sv-96 elt-count))))
+                       (-> v1-34 (-> self movie-pos-index))
+                       (the-as vector #f))))
+          (cond
+            ((and *debug-segment* (< (-> *fuel-cell-tune-pos* w) 1000000000.0))
+             (move-to-point! (-> self root) *fuel-cell-tune-pos*)
+             (set-yaw-angle-clear-roll-pitch! (-> self root) (-> *fuel-cell-tune-pos* w)))
+            ((= (-> self movie-pos-index) -1))
+            (gp-1 (move-to-point! (-> self root) gp-1) (set-yaw-angle-clear-roll-pitch! (-> self root) (-> gp-1 w)))
+            (else
+             (move-to-point! (-> self root) (-> (if target target *target*) control trans))
+             (set-yaw-angle-clear-roll-pitch! (-> self root) (y-angle (-> (if target target *target*) control)))
+             (move-to-ground (-> self root) (the-as float 40960.0) (the-as float 40960.0) #f (collide-kind background)))))
+        (spool-push *art-control* (-> self victory-anim name) 0 self (the-as float -99.0))
+        (if (or (= target *target*) (not target))
+          (send-event *target* 'get-pickup (-> self fact pickup-type) (-> self fact pickup-amount)))
+        (set! (-> self draw bounds w) 32768.0)
+        (logior! (-> self skel status) (janim-status inited))
+        (when (or (= target *target*) (not target))
+          (send-event target 'blend-shape #t)
+          (add-setting! 'music-volume 'rel (-> *setting-control* current music-volume-movie) 0)
+          (add-setting! 'sfx-volume 'rel (-> *setting-control* current sfx-volume-movie) 0)
+          (add-setting! 'ambient-volume 'rel (-> *setting-control* current ambient-volume-movie) 0)
+          (process-spawn othercam self 10 #f #t :to self)
+          (auto-save-command 'auto-save 0 0 *default-pool*))
+        (ja-play-spooled-anim (-> self victory-anim)
+                              (the-as art-joint-anim fuel-cell-idle-ja)
+                              (the-as art-joint-anim #f)
+                              (the-as (function process-drawable symbol) false-func))
+        (remove-setting! 'music-volume)
+        (remove-setting! 'sfx-volume)
+        (remove-setting! 'ambient-volume)
+        (when (or (= target *target*) (not target))
+          (send-event *target* 'blend-shape #f)
+          (send-event *target* 'end-mode)
+          (send-event *camera* 'no-intro)
+          (send-event *camera* 'clear-entity))
+        (ja-channel-set! 0)
+        (suspend)
+        (suspend)
+        (process-spawn-function process
+          (lambda :behavior collectable ((arg0 game-task))
+            (while (or (-> *setting-control* current ambient)
+                       (-> *setting-control* current movie)
+                       (-> *setting-control* current hint)
+                       (str-is-playing?))
+              (suspend))
+            (cond
+              ((= arg0 (game-task training-buzzer))
+               (level-hint-spawn (text-id training-buzzer-resolution) "asstvb45" (the-as entity #f) *entity-pool* (game-task none)))
+              ((= arg0 (game-task training-door))
+               (level-hint-spawn (text-id training-eco-opened-door) "sagevb25" (the-as entity #f) *entity-pool* (game-task none)))
+              ((= arg0 (game-task beach-ecorocks))
+               (level-hint-spawn (text-id beach-ecorocks-resolution) "sagevb01" (the-as entity #f) *entity-pool* (game-task none)))
+              ((= arg0 (game-task misty-cannon))
+               (level-hint-spawn (text-id misty-cannon-resolution) "sagevb02" (the-as entity #f) *entity-pool* (game-task none)))
+              ((= arg0 (game-task misty-bike))
+               (level-hint-spawn (text-id misty-bike-resolution) "asstvb03" (the-as entity #f) *entity-pool* (game-task none)))
+              ((= arg0 (game-task firecanyon-end))
+               (level-hint-spawn (text-id firecanyon-end-resolution) "sksp0095" (the-as entity #f) *entity-pool* (game-task none)))
+              ((= arg0 (game-task rolling-robbers))
+               (level-hint-spawn (text-id rolling-robbers-resolution) "asstvb20" (the-as entity #f) *entity-pool* (game-task none)))
+              ((= arg0 (game-task rolling-plants))
+               (level-hint-spawn (text-id rolling-plants-resolution) "sagevb03" (the-as entity #f) *entity-pool* (game-task none)))
+              ((= arg0 (game-task swamp-flutflut))
+               (level-hint-spawn (text-id swamp-flutflut-resolution) "asstvb21" (the-as entity #f) *entity-pool* (game-task none)))
+              ((= arg0 (game-task ogre-boss))
+               (level-hint-spawn (text-id ogre-boss-resolution) "asstvb23" (the-as entity #f) *entity-pool* (game-task none)))
+              ((= arg0 (game-task ogre-end))
+               (level-hint-spawn (text-id ogre-race-resolution) "asstvb25" (the-as entity #f) *entity-pool* (game-task none)))
+              ((= arg0 (game-task beach-buzzer))
+               (level-hint-spawn (text-id sidekick-buzzer-resolution) "sksp009k" (the-as entity #f) *entity-pool* (game-task none)))
+              ((= arg0 (game-task jungle-buzzer))
+               (level-hint-spawn (text-id sidekick-buzzer-resolution) "sksp009k" (the-as entity #f) *entity-pool* (game-task none)))
+              ((= arg0 (game-task misty-buzzer))
+               (level-hint-spawn (text-id sidekick-buzzer-resolution) "sksp009k" (the-as entity #f) *entity-pool* (game-task none)))
+              ((= arg0 (game-task firecanyon-buzzer))
+               (level-hint-spawn (text-id sidekick-buzzer-resolution) "sksp009k" (the-as entity #f) *entity-pool* (game-task none)))
+              ((= arg0 (game-task rolling-buzzer))
+               (level-hint-spawn (text-id sidekick-buzzer-resolution) "sksp009k" (the-as entity #f) *entity-pool* (game-task none)))
+              ((= arg0 (game-task sunken-buzzer))
+               (level-hint-spawn (text-id sidekick-buzzer-resolution) "sksp009k" (the-as entity #f) *entity-pool* (game-task none)))
+              ((= arg0 (game-task swamp-buzzer))
+               (level-hint-spawn (text-id sidekick-buzzer-resolution) "sksp009k" (the-as entity #f) *entity-pool* (game-task none)))
+              ((= arg0 (game-task ogre-buzzer))
+               (level-hint-spawn (text-id sidekick-buzzer-resolution) "sksp009k" (the-as entity #f) *entity-pool* (game-task none)))
+              ((= arg0 (game-task cave-buzzer))
+               (level-hint-spawn (text-id sidekick-buzzer-resolution) "sksp009k" (the-as entity #f) *entity-pool* (game-task none)))
+              ((= arg0 (game-task snow-buzzer))
+               (level-hint-spawn (text-id sidekick-buzzer-resolution) "sksp009k" (the-as entity #f) *entity-pool* (game-task none)))
+              ((= arg0 (game-task lavatube-buzzer))
+               (level-hint-spawn (text-id sidekick-buzzer-resolution) "sksp009k" (the-as entity #f) *entity-pool* (game-task none)))
+              ((= arg0 (game-task citadel-buzzer))
+               (level-hint-spawn (text-id sidekick-buzzer-resolution) "sksp009k" (the-as entity #f) *entity-pool* (game-task none)))
+              ((= arg0 (game-task village1-buzzer))
+               (level-hint-spawn (text-id sidekick-buzzer-resolution) "sksp009k" (the-as entity #f) *entity-pool* (game-task none)))
+              ((= arg0 (game-task village2-buzzer))
+               (level-hint-spawn (text-id sidekick-buzzer-resolution) "sksp009k" (the-as entity #f) *entity-pool* (game-task none)))
+              ((= arg0 (game-task village3-buzzer))
+               (level-hint-spawn (text-id sidekick-buzzer-resolution) "sksp009k" (the-as entity #f) *entity-pool* (game-task none))))
+            (none))
+          (the int (-> self fact pickup-amount))
+          :to
+          self)
+        (when (or (= target *target*) (not target))
+          (case (the int (-> self fact pickup-amount))
+            (((game-task citadel-sage-blue)) (send-event (process-by-name "blue-sagecage-1" *active-pool*) 'play-anim))
+            (((game-task citadel-sage-red)) (send-event (process-by-name "red-sagecage-1" *active-pool*) 'play-anim))
+            (((game-task citadel-sage-yellow)) (send-event (process-by-name "yellow-sagecage-1" *active-pool*) 'play-anim))
+            (((game-task citadel-sage-green)) (send-event (process-by-name "green-sagecage-1" *active-pool*) 'play-anim))
+            (((game-task jungle-eggtop) (game-task snow-eggtop) (game-task snow-ball) (game-task sunken-slide)))
+            (else (send-event (ppointer->process (-> *hud-parts* fuel-cell)) 'show)))
+          (runs-on-cell-pickup 'cutscene-end)
+          (convert-to-hud-object self (the-as hud (ppointer->process (-> *hud-parts* fuel-cell)))))))
+  :post
+    (behavior ()
+      (transform-post)
+      (if (-> self state-object) (spawn (-> self part) (the-as vector (-> self root root-prim prim-core))))))
+
+(define racer? #f)
+
+(define flutflut? #f)
+
+(defun enable-unlockZoomers-20-cells? ()
+  (-> *randomizer-settings* checkpoint-randomizer?))
+
+(defun enable-skip-samos-intro? ()
+  (-> *randomizer-settings* checkpoint-randomizer?))
+
+(defun enable-citadel-cutscene-skips? ()
+  ;; relies on modifcations in collectibles.gc
+  ;; relies on modifcations in assistant-citadel.gc
+  (-> *randomizer-settings* checkpoint-randomizer?))
+
+(defun enable-geyser-spawn-game-start? ()
+  (-> *randomizer-settings* checkpoint-randomizer?))
+
+(defun enable-unlock-citadel-door-no-cells? ()
+  ;; depends on modifcations in racer.gc
+  (and (-> *randomizer-settings* checkpoint-randomizer?)
+       (or (= (-> *level* level 0 name) 'lavatube) (= (-> *level* level 0 name) 'citadel))))
+
+(defun unlockZoomers-20-cells ()
+  ;; Skip the keira zoomer cutscenes if the player has 20 or more cells, or if they have collected the end cell.
+  (if (or (>= (-> *game-info* fuel) 20) (task-complete? *game-info* (game-task firecanyon-end)))
+    (begin
+      (close-specific-task! (game-task firecanyon-assistant) (task-status need-reward-speech))))
+  (if (or (>= (-> *game-info* fuel) 20) (task-complete? *game-info* (game-task lavatube-end)))
+    (begin
+      (close-specific-task! (game-task lavatube-start) (task-status need-reward-speech)))))
+
+(defun skip-samos-intro ()
+  ;; Skip the samos cutscenes if the randomizer is on. Cutscenes bad.
+  (close-specific-task! (game-task intro) (task-status need-resolution))
+  (close-specific-task! (game-task beach-ecorocks) (task-status need-introduction)))
+
+(defun change-geyser-spawn-game-start ()
+  (if (string= (symbol->string (-> (level-get-target-inside *level*) name)) "training")
+    (set! (-> *game-info* current-continue) (the-as continue-point (get-continue-by-name *game-info* "game-start")))
+    (none)))
+
+(defstate pickup (fuel-cell)
+  :virtual #t
+  :enter
+    (behavior ((arg0 object) (arg1 handle))
+      (set-time! (-> self state-time))
+      (set! (-> self state-object) #t)
+      (let ((t9-1 (-> (the-as (state eco-collectable) (find-parent-state)) enter))) (if t9-1 (t9-1))))
+  :trans
+    (behavior ()
+      (let ((f30-0 (the-as float
+                           (cond
+                             ((string= (-> self victory-anim name) "fuel-cell-victory") 97.0)
+                             ((string= (-> self victory-anim name) "fuel-cell-victory-2") 97.0)
+                             ((string= (-> self victory-anim name) "fuel-cell-victory-3") 97.0)
+                             ((string= (-> self victory-anim name) "fuel-cell-victory-4") 97.0)
+                             ((string= (-> self victory-anim name) "fuel-cell-victory-5") 77.0)
+                             ((string= (-> self victory-anim name) "fuel-cell-victory-6") 97.0)
+                             ((string= (-> self victory-anim name) "fuel-cell-victory-7") 97.0)
+                             ((string= (-> self victory-anim name) "fuel-cell-victory-8") 97.0)
+                             ((string= (-> self victory-anim name) "fuel-cell-racer-victory-1") 88.0)
+                             ((string= (-> self victory-anim name) "fuel-cell-flut-victory-1") 150.0)
+                             (else 5000.0)))))
+        (when (and (logtest? (-> self skel status) (janim-status spool)) (and (>= (ja-aframe-num 0) f30-0) (-> self state-object)))
+          (set! (-> self state-object) #f)
+          (kill-and-free-particles (-> self part))
+          (logior! (-> self draw status) (draw-status skip-bones))
+          (if (not (or (logtest? (res-lump-value (-> self entity) 'options fact-options :time (the-as float -1000000000.0))
+                                 (fact-options powerup))
+                       (and *target* (logtest? (-> *target* control root-prim prim-core action) (collide-action racer)))))
+            (send-event *camera* 'teleport-to-other-start-string)))))
+  :code
+    (behavior ((arg0 object) (arg1 handle))
       (local-vars (sv-96 res-tag))
-      (when (or (= target *target*) (not target))
-        (cancel-current-spool-anim)
-        (sound-play "pu-powercell")
-        (runs-on-cell-pickup 'pickup)
-        )
+      (sound-play "pu-powercell")
       (clear-collide-with-as (-> self root))
       (logclear! (-> self mask) (process-mask actor-pause))
       (logclear! (-> self draw status) (draw-status hidden))
       (process-entity-status! self (entity-perm-status dead) #t)
       (stop! (-> self sound))
-      (while (handle->process (-> *game-info* other-camera-handle))
-        (format #t
-                "WARNING: fuel-cell stall ~D ~A ~A~%"
-                (current-time)
-                (handle->process (-> *game-info* other-camera-handle))
-                (-> *level* loading-level))
-        (spool-push *art-control* (-> self victory-anim name) 0 self (the-as float -99.0))
-        (suspend))
-      (while (not (send-event (if target target *target*) 'clone-anim self))
-        (spool-push *art-control* (-> self victory-anim name) 0 self (the-as float -99.0))
-        (format #t "WARNING: fuel-cell stall on not cloning.~%")
-        (suspend))
-      (set! sv-96 (new 'static 'res-tag))
-      (let* ((v1-34 (res-lump-data (-> self entity) 'movie-pos (inline-array vector) :tag-ptr (& sv-96) :time (the-as float -1000000000.0)))
-             (gp-1 (if (and v1-34 (< (-> self movie-pos-index) (the-as int (-> sv-96 elt-count))))
-                     (-> v1-34 (-> self movie-pos-index))
-                     (the-as vector #f))))
-        (cond
-          ((and *debug-segment* (< (-> *fuel-cell-tune-pos* w) 1000000000.0))
-           (move-to-point! (-> self root) *fuel-cell-tune-pos*)
-           (set-yaw-angle-clear-roll-pitch! (-> self root) (-> *fuel-cell-tune-pos* w)))
-          ((= (-> self movie-pos-index) -1))
-          (gp-1 (move-to-point! (-> self root) gp-1) (set-yaw-angle-clear-roll-pitch! (-> self root) (-> gp-1 w)))
-          (else
-           (move-to-point! (-> self root) (-> (if target target *target*) control trans))
-           (set-yaw-angle-clear-roll-pitch! (-> self root) (y-angle (-> (if target target *target*) control)))
-           (move-to-ground (-> self root) (the-as float 40960.0) (the-as float 40960.0) #f (collide-kind background)))))
-      (spool-push *art-control* (-> self victory-anim name) 0 self (the-as float -99.0))
-      (if (or (= target *target*) (not target)) (send-event *target* 'get-pickup (-> self fact pickup-type) (-> self fact pickup-amount)))
-      (set! (-> self draw bounds w) 32768.0)
-      (logior! (-> self skel status) (janim-status inited))
-      (when (or (= target *target*) (not target))
-        (send-event target 'blend-shape #t)
+      (when (enable-powercell-cutscenes?)
+        (while (handle->process (-> *game-info* other-camera-handle))
+          (format #t
+                  "WARNING: fuel-cell stall ~D ~A ~A~%"
+                  (current-time)
+                  (handle->process (-> *game-info* other-camera-handle))
+                  (-> *level* loading-level))
+          (spool-push *art-control* (-> self victory-anim name) 0 self (the-as float -99.0))
+          (suspend))
+        (while (not (send-event *target* 'clone-anim self))
+          (spool-push *art-control* (-> self victory-anim name) 0 self (the-as float -99.0))
+          (format #t "WARNING: fuel-cell stall on not cloning.~%")
+          (suspend))
+        (set! sv-96 (new 'static 'res-tag))
+        (let* ((v1-34 (res-lump-data (-> self entity) 'movie-pos (inline-array vector) :tag-ptr (& sv-96) :time (the-as float -1000000000.0)))
+               (gp-1 (if (and v1-34 (< (-> self movie-pos-index) (the-as int (-> sv-96 elt-count))))
+                       (-> v1-34 (-> self movie-pos-index))
+                       (the-as vector #f))))
+          (cond
+            ((and *debug-segment* (< (-> *fuel-cell-tune-pos* w) 1000000000.0))
+             (move-to-point! (-> self root) *fuel-cell-tune-pos*)
+             (set-yaw-angle-clear-roll-pitch! (-> self root) (-> *fuel-cell-tune-pos* w)))
+            ((= (-> self movie-pos-index) -1))
+            (gp-1 (move-to-point! (-> self root) gp-1) (set-yaw-angle-clear-roll-pitch! (-> self root) (-> gp-1 w)))
+            (else
+             (move-to-point! (-> self root) (-> *target* control trans))
+             (set-yaw-angle-clear-roll-pitch! (-> self root) (y-angle (-> *target* control)))
+             (move-to-ground (-> self root) (the-as float 40960.0) (the-as float 40960.0) #f (collide-kind background))))
+          (spool-push *art-control* (-> self victory-anim name) 0 self (the-as float -99.0))))
+      (send-event *target* 'get-pickup (-> self fact pickup-type) (-> self fact pickup-amount))
+      (when (enable-powercell-cutscenes?)
+        (set! (-> self draw bounds w) 32768.0)
+        (logior! (-> self skel status) (janim-status inited))
+        (send-event *target* 'blend-shape #t)
         (add-setting! 'music-volume 'rel (-> *setting-control* current music-volume-movie) 0)
         (add-setting! 'sfx-volume 'rel (-> *setting-control* current sfx-volume-movie) 0)
         (add-setting! 'ambient-volume 'rel (-> *setting-control* current ambient-volume-movie) 0)
-        (process-spawn othercam self 10 #f #t :to self)
-        (auto-save-command 'auto-save 0 0 *default-pool*)
-        )
-      (ja-play-spooled-anim (-> self victory-anim)
-                            (the-as art-joint-anim fuel-cell-idle-ja)
-                            (the-as art-joint-anim #f)
-                            (the-as (function process-drawable symbol) false-func))
+        (process-spawn othercam self 10 #f #t :to self))
+      (auto-save-command 'auto-save 0 0 *default-pool*)
+      ;; play powercell animation if randomizer disabled
+      (when (enable-powercell-cutscenes?)
+        (ja-play-spooled-anim (-> self victory-anim)
+                              (the-as art-joint-anim fuel-cell-idle-ja)
+                              (the-as art-joint-anim #f)
+                              (the-as (function process-drawable symbol) false-func)))
+      (when (and (not flutflut?) (not racer?))
+        (send-event *target* 'end-mode))
       (remove-setting! 'music-volume)
       (remove-setting! 'sfx-volume)
       (remove-setting! 'ambient-volume)
-      (when (or (= target *target*) (not target))
-        (send-event *target* 'blend-shape #f)
-        (send-event *target* 'end-mode)
-        (send-event *camera* 'no-intro)
-        (send-event *camera* 'clear-entity)
-        )
+      (send-event *target* 'blend-shape #f)
+      (send-event *camera* 'no-intro)
+      (send-event *camera* 'clear-entity)
       (ja-channel-set! 0)
       (suspend)
       (suspend)
+      ;; warp to random checkpoint if randomizer enabled
+      (when (and (-> *randomizer-settings* checkpoint-randomizer?) (-> *randomizer-settings* warp-on-cell?))
+        (orchestrateCheckpointWarp 1))
       (process-spawn-function process
         (lambda :behavior collectable ((arg0 game-task))
           (while (or (-> *setting-control* current ambient)
@@ -1147,530 +1364,23 @@
         (the int (-> self fact pickup-amount))
         :to
         self)
-      (when (or (= target *target*) (not target))
-        (case (the int (-> self fact pickup-amount))
-          (((game-task citadel-sage-blue)) (send-event (process-by-name "blue-sagecage-1" *active-pool*) 'play-anim))
-          (((game-task citadel-sage-red)) (send-event (process-by-name "red-sagecage-1" *active-pool*) 'play-anim))
-          (((game-task citadel-sage-yellow)) (send-event (process-by-name "yellow-sagecage-1" *active-pool*) 'play-anim))
-          (((game-task citadel-sage-green)) (send-event (process-by-name "green-sagecage-1" *active-pool*) 'play-anim))
-          (((game-task jungle-eggtop) (game-task snow-eggtop) (game-task snow-ball) (game-task sunken-slide)))
-          (else (send-event (ppointer->process (-> *hud-parts* fuel-cell)) 'show)))
-        (runs-on-cell-pickup 'cutscene-end)
-        (convert-to-hud-object self (the-as hud (ppointer->process (-> *hud-parts* fuel-cell)))))))
+      (case (the int (-> self fact pickup-amount))
+        (((game-task citadel-sage-blue))
+         (if (not (enable-citadel-cutscene-skips?)) (send-event (process-by-name "blue-sagecage-1" *active-pool*) 'play-anim)))
+        (((game-task citadel-sage-red))
+         (if (not (enable-citadel-cutscene-skips?)) (send-event (process-by-name "red-sagecage-1" *active-pool*) 'play-anim)))
+        (((game-task citadel-sage-yellow))
+         (if (not (enable-citadel-cutscene-skips?)) (send-event (process-by-name "yellow-sagecage-1" *active-pool*) 'play-anim)))
+        (((game-task citadel-sage-green))
+         (if (not (enable-citadel-cutscene-skips?)) (send-event (process-by-name "green-sagecage-1" *active-pool*) 'play-anim)))
+        (((game-task jungle-eggtop) (game-task snow-eggtop) (game-task snow-ball) (game-task sunken-slide)))
+        (else (send-event (ppointer->process (-> *hud-parts* fuel-cell)) 'show)))
+      (runs-on-cell-pickup 'cutscene-end)
+      (convert-to-hud-object self (the-as hud (ppointer->process (-> *hud-parts* fuel-cell)))))
   :post
     (behavior ()
       (transform-post)
       (if (-> self state-object) (spawn (-> self part) (the-as vector (-> self root root-prim prim-core))))))
-
-(define racer? #f)
-(define flutflut? #f)
-
-(defun enable-unlockZoomers-20-cells? ()
-  (-> *randomizer-settings* checkpoint-randomizer?)
-  )
-
-(defun enable-skip-samos-intro? ()
-  (-> *randomizer-settings* checkpoint-randomizer?)
-  )
-
-(defun enable-citadel-cutscene-skips? ()
-  ;; relies on modifcations in collectibles.gc
-  ;; relies on modifcations in assistant-citadel.gc
-  (-> *randomizer-settings* checkpoint-randomizer?)
-  )
-
-(defun enable-geyser-spawn-game-start? ()
-  (-> *randomizer-settings* checkpoint-randomizer?)
-  )
-
-
-
-(defun enable-unlock-citadel-door-no-cells? ()
-  ;; depends on modifcations in racer.gc
-  (and
-    (-> *randomizer-settings* checkpoint-randomizer?)
-    (or
-      (= (-> *level* level 0 name) 'lavatube)
-      (= (-> *level* level 0 name) 'citadel)
-      )
-    )
-  )
-
-
-
-(defun unlockZoomers-20-cells ()
-  ;; Skip the keira zoomer cutscenes if the player has 20 or more cells, or if they have collected the end cell.
-  (if (or (>= (-> *game-info* fuel) 20) (task-complete? *game-info* (game-task firecanyon-end)) )
-  (begin
-    (close-specific-task! (game-task firecanyon-assistant) (task-status need-reward-speech))
-  ))
-  (if (or (>= (-> *game-info* fuel) 20) (task-complete? *game-info* (game-task lavatube-end)) )
-  (begin
-    (close-specific-task! (game-task lavatube-start) (task-status need-reward-speech))
-  ))
-  )
-
-(defun skip-samos-intro ()
-  ;; Skip the samos cutscenes if the randomizer is on. Cutscenes bad.
-  (close-specific-task! (game-task intro) (task-status need-resolution))
-  (close-specific-task! (game-task beach-ecorocks) (task-status need-introduction))
-  )
-
-(defun change-geyser-spawn-game-start ()
-  (if (string= (symbol->string (-> (level-get-target-inside *level*) name)) "training")
-  (set! (-> *game-info* current-continue) (the-as continue-point (get-continue-by-name *game-info* "game-start")))
-  (none))
-  )
-
-
-
-(defstate pickup (fuel-cell)
-  :virtual #t
-  :enter (behavior ((arg0 object) (arg1 handle))
-    (set-time! (-> self state-time))
-    (set! (-> self state-object) #t)
-    (let ((t9-1 (-> (the-as (state eco-collectable) (find-parent-state)) enter)))
-      (if t9-1
-          (t9-1)
-          )
-      )
-    )
-  :trans (behavior ()
-    (let ((f30-0 (the-as float (cond
-                                 ((string= (-> self victory-anim name) "fuel-cell-victory")
-                                  97.0
-                                  )
-                                 ((string= (-> self victory-anim name) "fuel-cell-victory-2")
-                                  97.0
-                                  )
-                                 ((string= (-> self victory-anim name) "fuel-cell-victory-3")
-                                  97.0
-                                  )
-                                 ((string= (-> self victory-anim name) "fuel-cell-victory-4")
-                                  97.0
-                                  )
-                                 ((string= (-> self victory-anim name) "fuel-cell-victory-5")
-                                  77.0
-                                  )
-                                 ((string= (-> self victory-anim name) "fuel-cell-victory-6")
-                                  97.0
-                                  )
-                                 ((string= (-> self victory-anim name) "fuel-cell-victory-7")
-                                  97.0
-                                  )
-                                 ((string= (-> self victory-anim name) "fuel-cell-victory-8")
-                                  97.0
-                                  )
-                                 ((string= (-> self victory-anim name) "fuel-cell-racer-victory-1")
-                                  88.0
-                                  )
-                                 ((string= (-> self victory-anim name) "fuel-cell-flut-victory-1")
-                                  150.0
-                                  )
-                                 (else
-                                   5000.0
-                                   )
-                                 )
-                         )
-                 )
-          )
-      (when (and (logtest? (-> self skel status) (janim-status spool))
-                 (and (>= (ja-aframe-num 0) f30-0) (-> self state-object))
-                 )
-        (set! (-> self state-object) #f)
-        (kill-and-free-particles (-> self part))
-        (logior! (-> self draw status) (draw-status skip-bones))
-        (if (not (or (logtest? (res-lump-value (-> self entity) 'options fact-options :time (the-as float -1000000000.0))
-                               (fact-options powerup)
-                               )
-                     (and *target* (logtest? (-> *target* control root-prim prim-core action) (collide-action racer)))
-                     )
-                 )
-            (send-event *camera* 'teleport-to-other-start-string)
-            )
-        )
-      )
-    )
-  :code (behavior ((arg0 object) (arg1 handle))
-    (local-vars (sv-96 res-tag))
-    (sound-play "pu-powercell")
-    (clear-collide-with-as (-> self root))
-    (logclear! (-> self mask) (process-mask actor-pause))
-    (logclear! (-> self draw status) (draw-status hidden))
-    (process-entity-status! self (entity-perm-status dead) #t)
-    (stop! (-> self sound))
-    (when (enable-powercell-cutscenes?)
-      (while (handle->process (-> *game-info* other-camera-handle))
-        (format
-          #t
-          "WARNING: fuel-cell stall ~D ~A ~A~%"
-          (current-time)
-          (handle->process (-> *game-info* other-camera-handle))
-          (-> *level* loading-level)
-          )
-        (spool-push *art-control* (-> self victory-anim name) 0 self (the-as float -99.0))
-        (suspend)
-        )
-      (while (not (send-event *target* 'clone-anim self))
-        (spool-push *art-control* (-> self victory-anim name) 0 self (the-as float -99.0))
-        (format #t "WARNING: fuel-cell stall on not cloning.~%")
-        (suspend)
-        )
-      (set! sv-96 (new 'static 'res-tag))
-      (let* ((v1-34
-              (res-lump-data
-                (-> self entity)
-                'movie-pos
-                (inline-array vector)
-                :tag-ptr (& sv-96)
-                :time (the-as float -1000000000.0)
-                )
-              )
-            (gp-1 (if (and v1-34 (< (-> self movie-pos-index) (the-as int (-> sv-96 elt-count))))
-                      (-> v1-34 (-> self movie-pos-index))
-                      (the-as vector #f)
-                      )
-                  )
-            )
-        (cond
-          ((and *debug-segment* (< (-> *fuel-cell-tune-pos* w) 1000000000.0))
-          (move-to-point! (-> self root) *fuel-cell-tune-pos*)
-          (set-yaw-angle-clear-roll-pitch! (-> self root) (-> *fuel-cell-tune-pos* w))
-          )
-          ((= (-> self movie-pos-index) -1)
-          )
-          (gp-1
-            (move-to-point! (-> self root) gp-1)
-            (set-yaw-angle-clear-roll-pitch! (-> self root) (-> gp-1 w))
-            )
-          (else
-            (move-to-point! (-> self root) (-> *target* control trans))
-            (set-yaw-angle-clear-roll-pitch! (-> self root) (y-angle (-> *target* control)))
-            (move-to-ground (-> self root) (the-as float 40960.0) (the-as float 40960.0) #f (collide-kind background))
-            )
-          )
-        (spool-push *art-control* (-> self victory-anim name) 0 self (the-as float -99.0))
-        )
-      )
-
-    (send-event *target* 'get-pickup (-> self fact pickup-type) (-> self fact pickup-amount))
-    (when (enable-powercell-cutscenes?)
-      (set! (-> self draw bounds w) 32768.0)
-      (logior! (-> self skel status) (janim-status inited))
-      (send-event *target* 'blend-shape #t)
-      (add-setting! 'music-volume 'rel (-> *setting-control* current music-volume-movie) 0)
-      (add-setting! 'sfx-volume 'rel (-> *setting-control* current sfx-volume-movie) 0)
-      (add-setting! 'ambient-volume 'rel (-> *setting-control* current ambient-volume-movie) 0)
-      (process-spawn othercam self 10 #f #t :to self)
-      )
-
-    (auto-save-command 'auto-save 0 0 *default-pool*)
-
-    ;; play powercell animation if randomizer disabled
-    (when (enable-powercell-cutscenes?)
-      (ja-play-spooled-anim
-        (-> self victory-anim)
-        (the-as art-joint-anim fuel-cell-idle-ja)
-        (the-as art-joint-anim #f)
-        (the-as (function process-drawable symbol) false-func)
-        ))
-
-    (when (and (not flutflut?) (not racer?))
-      (send-event *target* 'end-mode)
-      )
-
-    (remove-setting! 'music-volume)
-    (remove-setting! 'sfx-volume)
-    (remove-setting! 'ambient-volume)
-    (send-event *target* 'blend-shape #f)
-    (send-event *camera* 'no-intro)
-    (send-event *camera* 'clear-entity)
-    (ja-channel-set! 0)
-    (suspend)
-    (suspend)
-
-   ;; warp to random checkpoint if randomizer enabled
-    (when (and (-> *randomizer-settings* checkpoint-randomizer?) (-> *randomizer-settings* warp-on-cell?))
-      (orchestrateCheckpointWarp 1)
-      )
-
-    (process-spawn-function
-      process
-      (lambda :behavior collectable
-        ((arg0 game-task))
-        (while (or (-> *setting-control* current ambient)
-                   (-> *setting-control* current movie)
-                   (-> *setting-control* current hint)
-                   (str-is-playing?)
-                   )
-          (suspend)
-          )
-        (cond
-          ((= arg0 (game-task training-buzzer))
-           (level-hint-spawn
-             (text-id training-buzzer-resolution)
-             "asstvb45"
-             (the-as entity #f)
-             *entity-pool*
-             (game-task none)
-             )
-           )
-          ((= arg0 (game-task training-door))
-           (level-hint-spawn
-             (text-id training-eco-opened-door)
-             "sagevb25"
-             (the-as entity #f)
-             *entity-pool*
-             (game-task none)
-             )
-           )
-          ((= arg0 (game-task beach-ecorocks))
-           (level-hint-spawn
-             (text-id beach-ecorocks-resolution)
-             "sagevb01"
-             (the-as entity #f)
-             *entity-pool*
-             (game-task none)
-             )
-           )
-          ((= arg0 (game-task misty-cannon))
-           (level-hint-spawn
-             (text-id misty-cannon-resolution)
-             "sagevb02"
-             (the-as entity #f)
-             *entity-pool*
-             (game-task none)
-             )
-           )
-          ((= arg0 (game-task misty-bike))
-           (level-hint-spawn
-             (text-id misty-bike-resolution)
-             "asstvb03"
-             (the-as entity #f)
-             *entity-pool*
-             (game-task none)
-             )
-           )
-          ((= arg0 (game-task firecanyon-end))
-           (level-hint-spawn
-             (text-id firecanyon-end-resolution)
-             "sksp0095"
-             (the-as entity #f)
-             *entity-pool*
-             (game-task none)
-             )
-           )
-          ((= arg0 (game-task rolling-robbers))
-           (level-hint-spawn
-             (text-id rolling-robbers-resolution)
-             "asstvb20"
-             (the-as entity #f)
-             *entity-pool*
-             (game-task none)
-             )
-           )
-          ((= arg0 (game-task rolling-plants))
-           (level-hint-spawn
-             (text-id rolling-plants-resolution)
-             "sagevb03"
-             (the-as entity #f)
-             *entity-pool*
-             (game-task none)
-             )
-           )
-          ((= arg0 (game-task swamp-flutflut))
-           (level-hint-spawn
-             (text-id swamp-flutflut-resolution)
-             "asstvb21"
-             (the-as entity #f)
-             *entity-pool*
-             (game-task none)
-             )
-           )
-          ((= arg0 (game-task ogre-boss))
-           (level-hint-spawn (text-id ogre-boss-resolution) "asstvb23" (the-as entity #f) *entity-pool* (game-task none))
-           )
-          ((= arg0 (game-task ogre-end))
-           (level-hint-spawn (text-id ogre-race-resolution) "asstvb25" (the-as entity #f) *entity-pool* (game-task none))
-           )
-          ((= arg0 (game-task beach-buzzer))
-           (level-hint-spawn
-             (text-id sidekick-buzzer-resolution)
-             "sksp009k"
-             (the-as entity #f)
-             *entity-pool*
-             (game-task none)
-             )
-           )
-          ((= arg0 (game-task jungle-buzzer))
-           (level-hint-spawn
-             (text-id sidekick-buzzer-resolution)
-             "sksp009k"
-             (the-as entity #f)
-             *entity-pool*
-             (game-task none)
-             )
-           )
-          ((= arg0 (game-task misty-buzzer))
-           (level-hint-spawn
-             (text-id sidekick-buzzer-resolution)
-             "sksp009k"
-             (the-as entity #f)
-             *entity-pool*
-             (game-task none)
-             )
-           )
-          ((= arg0 (game-task firecanyon-buzzer))
-           (level-hint-spawn
-             (text-id sidekick-buzzer-resolution)
-             "sksp009k"
-             (the-as entity #f)
-             *entity-pool*
-             (game-task none)
-             )
-           )
-          ((= arg0 (game-task rolling-buzzer))
-           (level-hint-spawn
-             (text-id sidekick-buzzer-resolution)
-             "sksp009k"
-             (the-as entity #f)
-             *entity-pool*
-             (game-task none)
-             )
-           )
-          ((= arg0 (game-task sunken-buzzer))
-           (level-hint-spawn
-             (text-id sidekick-buzzer-resolution)
-             "sksp009k"
-             (the-as entity #f)
-             *entity-pool*
-             (game-task none)
-             )
-           )
-          ((= arg0 (game-task swamp-buzzer))
-           (level-hint-spawn
-             (text-id sidekick-buzzer-resolution)
-             "sksp009k"
-             (the-as entity #f)
-             *entity-pool*
-             (game-task none)
-             )
-           )
-          ((= arg0 (game-task ogre-buzzer))
-           (level-hint-spawn
-             (text-id sidekick-buzzer-resolution)
-             "sksp009k"
-             (the-as entity #f)
-             *entity-pool*
-             (game-task none)
-             )
-           )
-          ((= arg0 (game-task cave-buzzer))
-           (level-hint-spawn
-             (text-id sidekick-buzzer-resolution)
-             "sksp009k"
-             (the-as entity #f)
-             *entity-pool*
-             (game-task none)
-             )
-           )
-          ((= arg0 (game-task snow-buzzer))
-           (level-hint-spawn
-             (text-id sidekick-buzzer-resolution)
-             "sksp009k"
-             (the-as entity #f)
-             *entity-pool*
-             (game-task none)
-             )
-           )
-          ((= arg0 (game-task lavatube-buzzer))
-           (level-hint-spawn
-             (text-id sidekick-buzzer-resolution)
-             "sksp009k"
-             (the-as entity #f)
-             *entity-pool*
-             (game-task none)
-             )
-           )
-          ((= arg0 (game-task citadel-buzzer))
-           (level-hint-spawn
-             (text-id sidekick-buzzer-resolution)
-             "sksp009k"
-             (the-as entity #f)
-             *entity-pool*
-             (game-task none)
-             )
-           )
-          ((= arg0 (game-task village1-buzzer))
-           (level-hint-spawn
-             (text-id sidekick-buzzer-resolution)
-             "sksp009k"
-             (the-as entity #f)
-             *entity-pool*
-             (game-task none)
-             )
-           )
-          ((= arg0 (game-task village2-buzzer))
-           (level-hint-spawn
-             (text-id sidekick-buzzer-resolution)
-             "sksp009k"
-             (the-as entity #f)
-             *entity-pool*
-             (game-task none)
-             )
-           )
-          ((= arg0 (game-task village3-buzzer))
-           (level-hint-spawn
-             (text-id sidekick-buzzer-resolution)
-             "sksp009k"
-             (the-as entity #f)
-             *entity-pool*
-             (game-task none)
-             )
-           )
-          )
-        (none)
-        )
-      (the int (-> self fact pickup-amount))
-      :to self
-      )
-    (case (the int (-> self fact pickup-amount))
-      (((game-task citadel-sage-blue))
-        (if (not (enable-citadel-cutscene-skips?))
-          (send-event (process-by-name "blue-sagecage-1" *active-pool*) 'play-anim)
-          )
-        )
-      (((game-task citadel-sage-red))
-        (if (not (enable-citadel-cutscene-skips?))
-          (send-event (process-by-name "red-sagecage-1" *active-pool*) 'play-anim)
-          )
-        )
-      (((game-task citadel-sage-yellow))
-        (if (not (enable-citadel-cutscene-skips?))
-          (send-event (process-by-name "yellow-sagecage-1" *active-pool*) 'play-anim)
-          )
-        )
-      (((game-task citadel-sage-green))
-        (if (not (enable-citadel-cutscene-skips?))
-          (send-event (process-by-name "green-sagecage-1" *active-pool*) 'play-anim)
-          )
-        )
-      (((game-task jungle-eggtop) (game-task snow-eggtop) (game-task snow-ball) (game-task sunken-slide))
-       )
-      (else
-        (send-event (ppointer->process (-> *hud-parts* fuel-cell)) 'show)
-        )
-      )
-    (runs-on-cell-pickup 'cutscene-end)
-    (convert-to-hud-object self (the-as hud (ppointer->process (-> *hud-parts* fuel-cell))))
-    )
-  :post (behavior ()
-    (transform-post)
-    (if (-> self state-object)
-        (spawn (-> self part) (the-as vector (-> self root root-prim prim-core)))
-        )
-    )
-  )
 
 (defmethod initialize ((this fuel-cell))
   (stack-size-set! (-> this main-thread) 512)
@@ -1860,9 +1570,10 @@
         (if (nonzero? s5-2) (close-specific-task! (the-as game-task s5-2) (task-status need-hint)))
         (when (and (= (get-reminder s4-1 0) 127) (and (-> self entity) (not (task-complete? *game-info* (the-as game-task s5-2)))))
           (let* ((target (the-as target (handle->process arg1))))
-            (if (and *target* (or (= target *target*) (not target))
-                    (logtest? (-> *target* control root-prim prim-core action) (collide-action racer snowball tube flut))
-                    (not arg0))
+            (if (and *target*
+                     (or (= target *target*) (not target))
+                     (logtest? (-> *target* control root-prim prim-core action) (collide-action racer snowball tube flut))
+                     (not arg0))
               (logior! (-> self fact options) (fact-options instant-collect skip-jump-anim)))
             (let ((v1-47 (birth-pickup-at-point (vector+! (new 'stack-no-clear 'vector) (-> self root trans) (new 'static 'vector :y 4096.0 :w 1.0))
                                                 (pickup-type fuel-cell)
@@ -1875,10 +1586,8 @@
                 (ja-channel-set! 0)
                 (clear-collide-with-as (-> self root))
                 (ja-post)
-                (let
-                  ((task-name (game-task->string (the-as game-task (logand (the int (-> self fact pickup-amount)) #xffff)))))
-                  (set! (-> (the-as fuel-cell (ppointer->process v1-47)) name) task-name)
-                  )
+                (let ((task-name (game-task->string (the-as game-task (logand (the int (-> self fact pickup-amount)) #xffff)))))
+                  (set! (-> (the-as fuel-cell (ppointer->process v1-47)) name) task-name))
                 (while (-> self child)
                   (suspend)))))))
       (when (-> self notify-parent)
@@ -2075,10 +1784,9 @@
                      (when sv-144
                        (set! sv-192 (the-as (pointer process) v1-58))
                        (let ((t9-20 (method-of-type money activate))) (t9-20 (the-as money sv-144) arg4 'money (the-as pointer #x70004000)))
-                             (if should-bob?
+                       (if should-bob?
                          (run-now-in-process sv-144 money-init-by-other arg0 s1-0 s0-0 (-> self entity))
-                               (run-now-in-process sv-144 money-init-by-other-no-bob arg0 *null-vector* s0-0 1.0 (-> self entity))
-                               )
+                         (run-now-in-process sv-144 money-init-by-other-no-bob arg0 *null-vector* s0-0 1.0 (-> self entity)))
                        (set! sv-192 (-> sv-144 ppointer))
                        v1-58))
                sv-192)
@@ -2111,8 +1819,7 @@
   sv-192)
 
 (defbehavior birth-pickup-at-point process ((arg0 vector) (arg1 pickup-type) (arg2 float) (arg3 symbol) (arg4 process-tree) (arg5 fact-info))
-  (birth-pickup-at-point-inner arg0 arg1 arg2 arg3 arg4 arg5 #t)
-  )
+  (birth-pickup-at-point-inner arg0 arg1 arg2 arg3 arg4 arg5 #t))
 
 (defmethod drop-pickup ((this fact-info) (arg0 symbol) (arg1 process-tree) (arg2 fact-info) (arg3 int))
   (let ((s3-0 (-> this pickup-type))
@@ -2302,16 +2009,17 @@
 (defstate vent-wait-for-touch (vent)
   :event
     (behavior ((proc process) (argc int) (message symbol) (block event-message-block))
-      (when (and (or *enable-remote-target-eco-pickup* (= *target* proc)) (or (= message 'touch) (= message 'attack))
-               (let ((a1-1 (new 'stack-no-clear 'event-message-block)))
-                 (set! (-> a1-1 from) self)
-                 (set! (-> a1-1 num-params) 2)
-                 (set! (-> a1-1 message) 'get-pickup)
-                 (set! (-> a1-1 param 0) (the-as uint (-> self fact pickup-type)))
-                 (set! (-> a1-1 param 1) (the-as uint (-> self fact pickup-amount)))
-                 (runs-on-eco-pickup (-> self fact pickup-type) self)
-                 (and (= (send-event-function proc a1-1) #t)
-                      (or (logtest? (-> self fact options) (fact-options powerup)) (send-event proc 'powerup)))))
+      (when (and (or *enable-remote-target-eco-pickup* (= *target* proc))
+                 (or (= message 'touch) (= message 'attack))
+                 (let ((a1-1 (new 'stack-no-clear 'event-message-block)))
+                   (set! (-> a1-1 from) self)
+                   (set! (-> a1-1 num-params) 2)
+                   (set! (-> a1-1 message) 'get-pickup)
+                   (set! (-> a1-1 param 0) (the-as uint (-> self fact pickup-type)))
+                   (set! (-> a1-1 param 1) (the-as uint (-> self fact pickup-amount)))
+                   (runs-on-eco-pickup (-> self fact pickup-type) self)
+                   (and (= (send-event-function proc a1-1) #t)
+                        (or (logtest? (-> self fact options) (fact-options powerup)) (send-event proc 'powerup)))))
         (go vent-pickup (process->handle proc)))
       (vent-standard-event-handler proc argc message block))
   :code

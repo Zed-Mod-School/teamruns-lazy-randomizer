@@ -8,6 +8,7 @@
 ;; DECOMP BEGINS
 
 (define-extern *allow-flutflut-anywhere* symbol)
+
 (define-extern process-close? (function process-drawable float basic))
 
 (if (not (nmember "flutp" *kernel-packages*)) (set! *kernel-packages* (cons "flutp" *kernel-packages*)))
@@ -29,7 +30,6 @@
    idle
    (pickup (state flutflut))
    wait-for-return))
-
 
 (defmethod relocate ((this flutflut) (offset int))
   (countdown (v1-0 2)
