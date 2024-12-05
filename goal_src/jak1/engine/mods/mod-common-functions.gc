@@ -55,9 +55,9 @@
   (set! (-> target inter_type) (interaction-type none))
   (set! (-> target inter_amount) 0.0)
   (set! (-> target inter_status) 0.0)
-  (set! (-> target inter_name) "")
-  (set! (-> target inter_parent) "")
-  (set! (-> target inter_level) "")
+  (clear (-> target inter_name))
+  (clear (-> target inter_parent))
+  (format (-> target inter_level) "none")
   (set! (-> target inter_cleanup) 0)
   (none))
 
@@ -68,8 +68,8 @@
   (none))
 
 (defun set-zoomer-wait-mode ()
-  (set! (-> *racer-mods* target-speed) 13840.0)
-  (set! (-> *racer-air-mods* target-speed) 13840.0)
+  (set! (-> *racer-mods* target-speed) 163840.0)
+  (set! (-> *racer-air-mods* target-speed) 163840.0)
   (none))
 
 (defun set-zoomer-full-mode ()
